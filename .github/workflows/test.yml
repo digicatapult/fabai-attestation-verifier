@@ -1,0 +1,62 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Go, WASM and vectors
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.4"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: Format and vet
+        run: |
+          test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+          go vet ./...
+          go vet -tags sealtest ./...
+          GOOS=js GOARCH=wasm go vet ./...
+          GOOS=js GOARCH=wasm go vet -tags sealtest ./...
+
+      - name: Go tests
+        run: go test -race -tags sealtest ./... && go test ./...
+
+      - name: Vectors under Node.js (Go test runner)
+        run: |
+          export PATH="$(go env GOROOT)/lib/wasm:$PATH"
+          GOOS=js GOARCH=wasm go test -tags sealtest ./vectors/
+
+      - name: Vectors under Node.js (JS wrapper)
+        run: |
+          GOOS=js GOARCH=wasm go build -tags sealtest -o "$RUNNER_TEMP/fabai-seal-test.wasm" ./cmd/fabai-seal-wasm
+          node js/test/run-vectors.mjs "$(go env GOROOT)/lib/wasm/wasm_exec.js" "$RUNNER_TEMP/fabai-seal-test.wasm" vectors
+
+      - name: Reproducible WASM build
+        run: scripts/check-reproducible.sh
+
+      - name: ShellCheck
+        run: shellcheck -S warning scripts/*.sh
