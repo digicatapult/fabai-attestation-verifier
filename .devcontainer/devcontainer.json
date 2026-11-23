@@ -1,0 +1,19 @@
+{
+  "name": "FabAI attestation verifier",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.27.4",
+      "installGoTools": false
+    },
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "24",
+      "nodeGypDependencies": false,
+      "pnpmVersion": "none"
+    }
+  },
+  "remoteUser": "vscode"
+}
