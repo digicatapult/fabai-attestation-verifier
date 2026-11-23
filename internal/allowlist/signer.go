@@ -1,7 +1,7 @@
 package allowlist
 
 // The allowlist's signer, compiled in the release workflow of
-// digicatapult/fabai-allowlist, at a vX.Y.Z tag, through GitHub 
+// digicatapult/fabai-allowlist, at a vX.Y.Z tag, through GitHub
 // Actions' OIDC issuer.
 const (
 	SignerIssuer   = "https://token.actions.githubusercontent.com"
