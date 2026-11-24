@@ -20,7 +20,7 @@ import (
 
 // DefaultDeadline bounds a whole check: the document request and the local
 // verification. Provisional until a check against the Protected VM has been
-// timed on the demo host (task 9.1).
+// timed on the demo host.
 const DefaultDeadline = 15 * time.Second
 
 // Channel selects which attested key a result carries.

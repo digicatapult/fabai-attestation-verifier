@@ -189,7 +189,7 @@ if key, ok := result.SendKey(); ok {
 - `CheckDocument` checks a saved document against the nonce it was requested
   with.
 - `seal.DefaultDeadline` is 15 s, provisional until a check against the
-  Protected VM has been timed (task 9.1).
+  Protected VM has been timed.
 
 ## Browser and WASM integration
 

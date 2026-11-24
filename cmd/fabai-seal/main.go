@@ -1,8 +1,7 @@
 //go:build !js
 
 // Command fabai-seal runs the seal check from the command line, for the
-// release gates (DEMO-DESIGN §11), and verifies an allowlist for the kiosk's
-// WASM build.
+// release gates, and verifies an allowlist for the kiosk's WASM build.
 //
 //	fabai-seal check --allowlist L --bundle B --url <base> [--enclave <host>] [--json]
 //	fabai-seal check --allowlist L --bundle B --document <file> --nonce <hex> [--json]

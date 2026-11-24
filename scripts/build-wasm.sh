@@ -6,8 +6,8 @@
 #
 # With an allowlist, the list's Sigstore bundle is verified natively first
 # (fabai-seal allowlist verify) and the list is embedded, so the bundle's
-# SHA-256 covers it (design D9 fallback). Without one, the bundle embeds no
-# list and every check fails with allowlist_unverified.
+# SHA-256 covers it. Without one, the bundle embeds no list and every check
+# fails with allowlist_unverified.
 set -euo pipefail
 
 readonly GO_TOOLCHAIN="go1.27.4"
