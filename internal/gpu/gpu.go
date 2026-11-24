@@ -1,5 +1,5 @@
 // Package gpu applies the first-version GPU evidence checks
-// (attestation-binding "GPU evidence, first version", design D5). It doesn't
+// (attestation-binding "GPU evidence, first version". It doesn't
 // verify the GPU's SPDM signature, its NVIDIA certificate chain or its
 // measurements: it trusts the measured guest to have collected the evidence.
 package gpu

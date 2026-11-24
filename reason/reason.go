@@ -1,5 +1,5 @@
 // Package reason defines the stable reason codes a seal check reports, and an
-// error type that carries one (design D3).
+// error type that carries one.
 package reason
 
 import (

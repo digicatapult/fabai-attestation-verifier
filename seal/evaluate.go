@@ -12,7 +12,7 @@ import (
 	"github.com/digicatapult/fabai-attestation-verifier/reason"
 )
 
-// evaluate runs steps 2-6 of design D3 on a fetched document:
+// evaluate runs steps 2-6 of the verification design on a fetched document:
 //
 //  2. parse and bind; 3. authenticate the report. A failure in either
 //     fails the hardware tick and leaves software and GPU not checked.

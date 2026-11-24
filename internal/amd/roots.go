@@ -11,8 +11,8 @@ import (
 
 // The AMD root keys (ARK), fetched from KDS /vcek/v1/<product>/cert_chain
 // on 2026-11-23 and byte-equal to go-sev-guest's embedded copies. They are
-// the only roots the verifier trusts (design D2); nothing at run time can add
-// or replace one.
+// the only roots the verifier trusts; nothing at run time can add or
+// replace one.
 var (
 	//go:embed roots/ark_milan.pem
 	arkMilanPEM []byte

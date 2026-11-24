@@ -2,8 +2,8 @@
 
 // Package synth builds synthetic conformance vectors: a fake ARK, ASK and
 // VCEK, SNP reports signed by the fake VCEK, and v3 documents assembled by
-// tinfoil-go's document.Build with a quote callback that signs (design D7).
-// It exists only in builds with the sealtest tag.
+// tinfoil-go's document.Build with a quote callback that signs. It exists
+// only in builds with the sealtest tag.
 package synth
 
 import (

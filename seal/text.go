@@ -2,8 +2,7 @@ package seal
 
 import "github.com/digicatapult/fabai-attestation-verifier/reason"
 
-// Main-screen wording, from DEMO-DESIGN §6. It never contains hex, hashes or
-// vendor key names; text_test.go checks it against §6's "Avoid" column.
+// Main-screen wording. It never contains hex, hashes or vendor key names.
 
 // tickLabels are the seal panel's three lines.
 var tickLabels = map[TickName]string{

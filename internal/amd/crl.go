@@ -20,7 +20,7 @@ var ErrOffline = errors.New("the seal check makes no network requests")
 
 // OfflineGetter answers go-sev-guest's HTTPS requests without a network: the
 // product's KDS CRL URL gets the CRL from the document's collateral, and
-// every other request fails (design D1).
+// every other request fails.
 type OfflineGetter struct {
 	CRLURL string
 	CRLDER []byte

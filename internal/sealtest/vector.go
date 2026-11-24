@@ -19,8 +19,7 @@ import (
 	"github.com/digicatapult/fabai-attestation-verifier/seal"
 )
 
-// Vector is one conformance vector (design D7). The Go and WASM builds read
-// the same files.
+// Vector is one conformance vector. The Go and WASM builds read the same files.
 type Vector struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`

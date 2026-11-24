@@ -1,7 +1,7 @@
-// Package docbind is the one adapter over tinfoil-go's verify/document
-// (design D1). It parses a v3 document strictly, checks the challenge
-// against the caller's nonce, recomputes REPORT_DATA, and selects the
-// channel keys and the AMD collateral. Nothing it returns is authenticated:
+// Package docbind is the one adapter over tinfoil-go's verify/document.
+// It parses a v3 document strictly, checks the challenge against the
+// caller's nonce, recomputes REPORT_DATA, and selects the channel keys
+// and the AMD collateral. Nothing it returns is authenticated:
 // the SNP report must still prove that the hardware bound ReportData.
 package docbind
 

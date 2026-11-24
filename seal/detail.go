@@ -12,8 +12,7 @@ import (
 	"github.com/digicatapult/fabai-attestation-verifier/internal/gpu"
 )
 
-// GPUNote says what the first-version GPU tick does and doesn't prove
-// (design D5).
+// GPUNote says what the first-version GPU tick does and doesn't prove.
 const GPUNote = "GPU evidence is bound to this report and checked for count, architecture and nonce. The GPU's own signature isn't checked yet."
 
 // Detail is the experts view. Fields are filled as far as the check got.

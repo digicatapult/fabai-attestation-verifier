@@ -8,7 +8,6 @@ import (
 	"github.com/digicatapult/fabai-attestation-verifier/reason"
 )
 
-// avoidWords is DEMO-DESIGN §6's "Avoid" column.
 var avoidWords = []string{
 	"attestation", "quote", "report",
 	"measurement", "hash", "digest",
