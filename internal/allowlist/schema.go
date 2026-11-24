@@ -1,6 +1,6 @@
 // Package allowlist decodes and schema-checks FabAI's measurement allowlist,
 // checks its Sigstore attestation, and matches authenticated reports against
-// it (measurement-allowlist spec).
+// it.
 package allowlist
 
 import (

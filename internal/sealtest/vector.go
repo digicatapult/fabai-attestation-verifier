@@ -23,8 +23,6 @@ import (
 type Vector struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	// Scenario names the spec scenario it covers, as "<spec>: <scenario>".
-	Scenario []string `json:"scenario,omitempty"`
 	// Source is "synthetic" or "captured".
 	Source string `json:"source"`
 	// Capture records where a captured document came from.

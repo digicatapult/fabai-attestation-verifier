@@ -101,12 +101,12 @@ func TestLiveApproved(t *testing.T) {
 
 func TestOnlyTheDocumentRequest(t *testing.T) {
 	r, server := newReplica(t)
-	result := checker(t, seal.Options{}).Check(context.Background(), seal.Target{BaseURL: server.URL, Enclave: "protected.fabai.demo"})
+	result := checker(t, seal.Options{}).Check(context.Background(), seal.Target{BaseURL: server.URL, Enclave: "protected.fabai.internal"})
 	key, _ := result.SendKey()
 	if !bytes.Equal(key, r.live.HPKEKey()) {
 		t.Errorf("key %x isn't the document's", key)
 	}
-	if len(r.requests) != 1 || r.requests[0].URL.Path != fetch.WellKnownPath || r.requests[0].URL.Query().Get("enclave") != "protected.fabai.demo" {
+	if len(r.requests) != 1 || r.requests[0].URL.Path != fetch.WellKnownPath || r.requests[0].URL.Query().Get("enclave") != "protected.fabai.internal" {
 		t.Errorf("requests: %v", r.requests)
 	}
 }

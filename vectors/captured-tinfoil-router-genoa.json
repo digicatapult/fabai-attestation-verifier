@@ -1,10 +1,6 @@
 {
   "name": "captured-tinfoil-router-genoa",
   "description": "A v3 document from a public cvmimage 0.14.19 deployment, with an allowlist written for its measurement",
-  "scenario": [
-    "attestation-binding: Real 0.14.19 document",
-    "seal-check: Native client"
-  ],
   "source": "captured",
   "capture": {
     "url": "https://inference.tinfoil.sh/.well-known/tinfoil-attestation/v3?nonce=3138f2bbed0ba55b7540ebf96b23cb9c3a8e98cc116f1dd38acf49a9fc6ee416",

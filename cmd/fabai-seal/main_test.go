@@ -21,7 +21,7 @@ func TestCheckFlagsCarryNoRootOrClock(t *testing.T) {
 	fs.VisitAll(func(f *flag.Flag) { names = append(names, f.Name) })
 	want := []string{"allowlist", "bundle", "deadline", "document", "enclave", "json", "nonce", "url"}
 	if !slices.Equal(names, want) {
-		t.Errorf("check flags are %v, want %v; review any new flag against seal-check \"Pinned AMD roots\"", names, want)
+		t.Errorf("check flags are %v, want %v; no flag may override the pinned AMD roots", names, want)
 	}
 }
 
@@ -40,9 +40,8 @@ func TestUsage(t *testing.T) {
 	}
 }
 
-// TestGateFails is seal-check "Gate fails": an offline check of a captured
-// document with one report byte flipped exits non-zero with a failing
-// hardware tick.
+// TestGateFails checks that an offline check of a captured document with one
+// report byte flipped exits non-zero with a failing hardware tick.
 func TestGateFails(t *testing.T) {
 	data, err := os.ReadFile("../../vectors/captured-tinfoil-router-genoa-corrupted.json")
 	if err != nil {

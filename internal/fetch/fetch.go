@@ -1,5 +1,5 @@
-// Package fetch requests a v3 attestation document for a fresh nonce
-// (attestation-binding: "Fresh nonce for every check", "Document request").
+// Package fetch requests a v3 attestation document for a fresh nonce, one for
+// every check.
 package fetch
 
 import (

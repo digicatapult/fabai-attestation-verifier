@@ -93,7 +93,6 @@ func run(baseURL, cvmimage, name, notes, out string) error {
 	approved := &sealtest.Vector{
 		Name:              stem,
 		Description:       fmt.Sprintf("A v3 document from a public cvmimage %s deployment, with an allowlist written for its measurement", cvmimage),
-		Scenario:          []string{"attestation-binding: Real 0.14.19 document", "seal-check: Native client"},
 		Source:            "captured",
 		Capture:           capture,
 		Document:          doc,
@@ -113,7 +112,6 @@ func run(baseURL, cvmimage, name, notes, out string) error {
 	corrupted := *approved
 	corrupted.Name = stem + "-corrupted"
 	corrupted.Description = "The same capture with one MEASUREMENT byte of the report flipped"
-	corrupted.Scenario = []string{"seal-check: Corrupted report", "seal-check: Gate fails"}
 	corrupted.Document = corruptedDoc
 	corrupted.Expect = sealtest.Outcome{
 		Hardware: sealtest.TickOutcome{Status: "fail", Reason: "signature_invalid"},

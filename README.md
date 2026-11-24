@@ -167,7 +167,7 @@ import "github.com/digicatapult/fabai-attestation-verifier/seal"
 
 checker := seal.New(allowlistJSON, allowlistBundleJSON, seal.Options{})
 // Before every send:
-result := checker.Check(ctx, seal.Target{BaseURL: gatewayURL, Enclave: "protected.fabai.demo"})
+result := checker.Check(ctx, seal.Target{BaseURL: gatewayURL, Enclave: "protected.fabai.internal"})
 if key, ok := result.SendKey(); ok {
     // Seal this one request body to key with EHBP, then drop the key.
 }
@@ -223,9 +223,9 @@ interfaces should normally import the `seal` package instead of invoking this
 command as a subprocess.
 
 ```sh
-# Live, through the gateway (release gates "Seal: approved", "Seal: modified")
+# Live, through the gateway
 fabai-seal check --allowlist allowlist.json --bundle allowlist.sigstore.json \
-  --url https://gateway.fabai.demo --enclave protected.fabai.demo [--json]
+  --url https://gateway.fabai.internal --enclave protected.fabai.internal [--json]
 
 # Offline: a saved document and the nonce it was requested with
 fabai-seal check --allowlist allowlist.json --bundle allowlist.sigstore.json \
@@ -286,6 +286,33 @@ clock, an unsigned allowlist). Release builds don't have it, and
 [`internal/releasecheck`](internal/releasecheck) checks that their binaries
 don't contain it.
 
+## Testing an integration
+
+The [`sealtest`](sealtest) package, also built only with the `sealtest` tag,
+lets another project test its use of the seal check without SEV-SNP
+hardware: for example a gateway that relays attestation requests, a client
+that seals requests to the attested key, or a service that supplies AMD
+collateral.
+
+```go
+replica, err := sealtest.NewReplica(hpkePublicKey) // the test server's X25519 key
+defer replica.TrustRoots()()                       // trust the synthetic AMD root
+doc, err := replica.Approved(nonce)                // or replica.Modified(nonce)
+result := sealtest.Checker(seal.Options{}).Check(ctx, target)
+```
+
+- `Approved` documents pass all three ticks. `Modified` documents pass the
+  hardware tick and fail the software tick.
+- `ApprovedWithCollateral` builds a document with a collateral service's
+  entries in place of the replica's own.
+- `VCEK`, `CertChainPEM`, `CRL`, `ChipID` and `ReportedTCB` give a
+  collateral service the synthetic chain to cache.
+- `TrustRoots` replaces the pinned AMD roots for the whole process, so don't
+  run checks in parallel with tests that rely on AMD's roots.
+
+Put such tests in files with a `//go:build sealtest` constraint, and run them
+with `go test -tags sealtest`.
+
 ## Development
 
 Go 1.27.4 (`tinfoil-go` uses `encoding/json/v2`), Node.js for the WASM tests.
@@ -311,6 +338,7 @@ scripts/check-reproducible.sh   # the WASM rebuilds to the same SHA-256
 | [`cmd/fabai-seal`](cmd/fabai-seal)                        | CLI                                                                         |
 | [`cmd/fabai-seal-wasm`](cmd/fabai-seal-wasm), [`js/`](js) | WASM entry point and JS wrapper                                             |
 | [`internal/sealtest`](internal/sealtest)                  | Vector format, runner, synthetic generator, capture tool (`sealtest` tag)   |
+| [`sealtest/`](sealtest)                                   | Synthetic documents for testing integrations (`sealtest` tag)               |
 
 ## Licence
 

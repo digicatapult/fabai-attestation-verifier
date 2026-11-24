@@ -1,7 +1,7 @@
 // Package amd authenticates an SEV-SNP report offline: the report signature,
 // VCEK → ASK → pinned ARK, the CRL from the collateral, the VCEK's
-// extensions against the report, and the REPORT_DATA binding
-// (seal-check "Hardware tick").
+// extensions against the report, and the REPORT_DATA binding: the hardware
+// tick.
 package amd
 
 import (

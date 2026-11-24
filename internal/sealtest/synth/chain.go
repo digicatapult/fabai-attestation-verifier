@@ -116,14 +116,22 @@ func (c *Chain) CRL(thisUpdate, nextUpdate time.Time, revoked ...*big.Int) ([]by
 	}, c.signer.Ark, c.signer.Keys.Ark)
 }
 
+// VCEKDER returns the chain's VCEK, DER-encoded.
+func (c *Chain) VCEKDER() []byte { return c.signer.Vcek.Raw }
+
+// CertChainPEM returns the ASK and then the ARK, PEM-encoded, as AMD KDS
+// serves them.
+func (c *Chain) CertChainPEM() []byte {
+	chain := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: c.signer.Ask.Raw})
+	return append(chain, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: c.signer.Ark.Raw})...)
+}
+
 // VCEKEntry is the amd-vcek/v1 collateral entry for subject cpu, carrying
 // the VCEK and the ASK-then-ARK chain.
 func (c *Chain) VCEKEntry() collateral.Entry {
-	chain := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: c.signer.Ask.Raw})
-	chain = append(chain, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: c.signer.Ark.Raw})...)
 	return entry("amd-vcek", collateral.AMDVCEKV1Format, []string{collateral.SubjectCPU}, map[string]string{
-		"vcek_der_base64": base64.StdEncoding.EncodeToString(c.signer.Vcek.Raw),
-		"cert_chain_pem":  string(chain),
+		"vcek_der_base64": base64.StdEncoding.EncodeToString(c.VCEKDER()),
+		"cert_chain_pem":  string(c.CertChainPEM()),
 	})
 }
 

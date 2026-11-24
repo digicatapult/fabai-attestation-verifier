@@ -1,8 +1,7 @@
 // FabAI seal check: JavaScript wrapper for the WASM build.
 //
-// The kiosk loads the bundle from a local copy and pins its SHA-256 (ADR-0009,
-// R18). Load wasm_exec.js from the same Go toolchain first; it defines
-// globalThis.Go.
+// The kiosk loads the bundle from a local copy and pins its SHA-256. Load
+// wasm_exec.js from the same Go toolchain first; it defines globalThis.Go.
 //
 //   import { loadSeal } from "./seal.mjs";
 //   const seal = await loadSeal(wasmBytes, PINNED_SHA256);

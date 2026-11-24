@@ -32,13 +32,13 @@ try {
   await loadSeal(wasm, "0".repeat(64));
   fail("loadSeal accepted a bundle whose digest isn't the pinned one");
 } catch {
-  // Expected: seal-check "Bundle digest mismatch".
+  // Expected: a bundle digest mismatch is refused.
 }
 
 await loadSeal(wasm, digest);
 const exports = Object.keys(globalThis.fabaiSeal).sort();
 if (!isDeepStrictEqual(exports, ["check"])) {
-  fail(`fabaiSeal exports ${exports}, want only check (seal-check "No root override")`);
+  fail(`fabaiSeal exports ${exports}, want only check, so nothing can override a root`);
 }
 
 const files = (await readdir(vectorsDir)).filter((f) => f.endsWith(".json")).sort();

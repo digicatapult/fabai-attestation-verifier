@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks that the WASM bundle rebuilds bit for bit: two builds from the same
 # commit, the second with an empty build cache and from another directory,
-# must have the same SHA-256 (seal-check "Rebuild matches").
+# must have the same SHA-256.
 set -euo pipefail
 
 work=""

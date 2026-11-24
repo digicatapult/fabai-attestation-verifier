@@ -1,10 +1,6 @@
 {
   "name": "captured-tinfoil-router-genoa-corrupted",
   "description": "The same capture with one MEASUREMENT byte of the report flipped",
-  "scenario": [
-    "seal-check: Corrupted report",
-    "seal-check: Gate fails"
-  ],
   "source": "captured",
   "capture": {
     "url": "https://inference.tinfoil.sh/.well-known/tinfoil-attestation/v3?nonce=3138f2bbed0ba55b7540ebf96b23cb9c3a8e98cc116f1dd38acf49a9fc6ee416",

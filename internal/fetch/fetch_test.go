@@ -48,7 +48,7 @@ func TestURL(t *testing.T) {
 		wantErr bool
 	}{
 		{target: Target{BaseURL: "https://replica.example"}, want: "https://replica.example/.well-known/tinfoil-attestation/v3?nonce=" + hexNonce},
-		{target: Target{BaseURL: "https://gw.example/prefix/", Enclave: "protected.fabai.demo"}, want: "https://gw.example/prefix/.well-known/tinfoil-attestation/v3?enclave=protected.fabai.demo&nonce=" + hexNonce},
+		{target: Target{BaseURL: "https://gw.example/prefix/", Enclave: "protected.fabai.internal"}, want: "https://gw.example/prefix/.well-known/tinfoil-attestation/v3?enclave=protected.fabai.internal&nonce=" + hexNonce},
 		{target: Target{BaseURL: "http://10.0.0.5:8443", Enclave: "replica:443"}, want: "http://10.0.0.5:8443/.well-known/tinfoil-attestation/v3?enclave=replica%3A443&nonce=" + hexNonce},
 		{target: Target{BaseURL: "ftp://x"}, wantErr: true},
 		{target: Target{BaseURL: "https://x/?a=b"}, wantErr: true},
