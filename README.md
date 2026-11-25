@@ -275,7 +275,12 @@ expected ticks and reason codes. The same files run:
 Synthetic vectors use a fake ARK, ASK and VCEK, with reports signed by
 `go-sev-guest`'s test signer and documents built by `document.Build`
 (`go run -tags sealtest ./internal/sealtest/gen -out vectors`); they cover
-every negative scenario that a document can express. Fetch-level scenarios
+every negative scenario that a document can express. They share one
+allowlist, [`vectors/fixtures/synthetic-allowlist.json`](vectors/fixtures),
+named by each vector's `allowlistFile` (relative to the vector) in place of
+an inline `allowlist`. The generator re-signs every document on each run, so
+regenerate only when a scenario changes; a Go test checks that the committed
+files still match the generator's scenarios and expectations. Fetch-level scenarios
 (503, oversized, redirect, deadline, concurrency, a server swapped between
 sends) are Go tests against `httptest` servers. Captured vectors are real
 documents from a public `cvmimage` 0.14.19 deployment. Capture them with

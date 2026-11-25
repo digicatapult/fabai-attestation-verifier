@@ -9,6 +9,7 @@ import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -34,9 +35,13 @@ type Vector struct {
 	Document []byte `json:"document"`
 	// Nonce is the nonce the check uses, lowercase hex.
 	Nonce string `json:"nonce"`
+	// AllowlistFile names a file holding the allowlist, as a slash-separated
+	// path relative to the vector's directory, so vectors can share one list.
+	// Load reads it into Allowlist. A vector has exactly one of the two.
+	AllowlistFile string `json:"allowlistFile,omitempty"`
 	// Allowlist is the list the check uses; AllowlistVerified says whether
 	// it counts as having passed its signature check.
-	Allowlist         jsontext.Value `json:"allowlist"`
+	Allowlist         jsontext.Value `json:"allowlist,omitzero"`
 	AllowlistVerified bool           `json:"allowlistVerified"`
 	// CheckTime is the fixed check time.
 	CheckTime time.Time `json:"checkTime"`
@@ -81,7 +86,8 @@ func OutcomeOf(r *seal.Result) Outcome {
 	}
 }
 
-// Load reads every *.json vector in dir, sorted by file name.
+// Load reads every *.json vector in dir, sorted by file name, and resolves
+// each vector's AllowlistFile.
 func Load(dir string) ([]*Vector, error) {
 	paths, err := filepath.Glob(filepath.Join(dir, "*.json"))
 	if err != nil {
@@ -98,9 +104,37 @@ func Load(dir string) ([]*Vector, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", path, err)
 		}
+		if err := v.resolveAllowlist(dir); err != nil {
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
 		vectors = append(vectors, v)
 	}
 	return vectors, nil
+}
+
+// resolveAllowlist reads AllowlistFile, relative to dir, into Allowlist.
+func (v *Vector) resolveAllowlist(dir string) error {
+	switch {
+	case v.AllowlistFile == "" && len(v.Allowlist) == 0:
+		return errors.New("vector has neither allowlist nor allowlistFile")
+	case v.AllowlistFile == "":
+		return nil
+	case len(v.Allowlist) != 0:
+		return errors.New("vector has both allowlist and allowlistFile")
+	}
+	name := filepath.FromSlash(v.AllowlistFile)
+	if !filepath.IsLocal(name) {
+		return fmt.Errorf("allowlistFile %q isn't a local path", v.AllowlistFile)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, name))
+	if err != nil {
+		return fmt.Errorf("allowlistFile: %w", err)
+	}
+	if err := json.Unmarshal(data, &v.Allowlist); err != nil {
+		return fmt.Errorf("allowlistFile %q: %w", v.AllowlistFile, err)
+	}
+	v.AllowlistFile = ""
+	return nil
 }
 
 // Parse decodes one vector strictly.
@@ -124,6 +158,9 @@ func (v *Vector) Marshal() ([]byte, error) {
 // Run checks the vector's document with its roots, allowlist and clock, and
 // returns the full result.
 func (v *Vector) Run(ctx context.Context) (*seal.Result, error) {
+	if v.AllowlistFile != "" || len(v.Allowlist) == 0 {
+		return nil, errors.New("vector allowlist isn't resolved: load vectors with Load, or inline allowlistFile")
+	}
 	nonce, err := hex.DecodeString(v.Nonce)
 	if err != nil {
 		return nil, fmt.Errorf("vector nonce: %w", err)
