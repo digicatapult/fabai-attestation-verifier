@@ -1,0 +1,118 @@
+{
+  "entries": [
+    {
+      "cmdline": "console=ttyS0 roothash=eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "configSha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "firmware": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "tag": "ovmf-edk2-stable202608-r1"
+      },
+      "guestFeatures": "0x1",
+      "guestPolicy": {
+        "abiMajor": 0,
+        "abiMinor": 0,
+        "ciphertextHidingDram": false,
+        "cxlAllowed": false,
+        "debug": false,
+        "memAes256Xts": false,
+        "migrateMA": false,
+        "pageSwapDisabled": false,
+        "raplDisabled": false,
+        "singleSocket": false,
+        "smt": true
+      },
+      "hostData": "c121406ccaa2e33d4e9788945ddcff093d45b8327a8d7186fff87ca52e5f1626",
+      "id": "protected-turin-8cpu",
+      "measurement": "494ac4c3f16e5dfb4a867e1c3137a88e623cb39c86b55c1101edb4d82492db6918c8becd104573ac0965f0ef231303fe",
+      "minimumTcb": {
+        "bootloader": 1,
+        "fmc": 1,
+        "microcode": 72,
+        "snp": 4,
+        "tee": 1
+      },
+      "provenance": {
+        "bundle": {
+          "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json"
+        },
+        "signerWorkflow": "https://github.com/digicatapult/fabai-deploy/.github/workflows/release.yml",
+        "sourceRef": "refs/tags/v1.0.0"
+      },
+      "runtimeImage": {
+        "initrdSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "kernelSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "manifestSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "version": "0.14.19"
+      },
+      "status": "active",
+      "vmShape": {
+        "cpus": 8,
+        "gpuArchitecture": "BLACKWELL",
+        "gpus": 1,
+        "memory": 65536,
+        "vcpuSignature": "0x800f12"
+      }
+    },
+    {
+      "cmdline": "console=ttyS0 roothash=eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "configSha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "firmware": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "tag": "ovmf-edk2-stable202608-r1"
+      },
+      "guestFeatures": "0x1",
+      "guestPolicy": {
+        "abiMajor": 0,
+        "abiMinor": 0,
+        "ciphertextHidingDram": false,
+        "cxlAllowed": false,
+        "debug": false,
+        "memAes256Xts": false,
+        "migrateMA": false,
+        "pageSwapDisabled": false,
+        "raplDisabled": false,
+        "singleSocket": false,
+        "smt": true
+      },
+      "hostData": "c121406ccaa2e33d4e9788945ddcff093d45b8327a8d7186fff87ca52e5f1626",
+      "id": "old-turin-8cpu",
+      "measurement": "46a9f393c82a15896b46c5f1cbd064deae191ff0ef5efb523b7251ce43bfe8eeea5e23628bca954205c3fedff28498a1",
+      "minimumTcb": {
+        "bootloader": 1,
+        "fmc": 1,
+        "microcode": 72,
+        "snp": 4,
+        "tee": 1
+      },
+      "provenance": {
+        "bundle": {
+          "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json"
+        },
+        "signerWorkflow": "https://github.com/digicatapult/fabai-deploy/.github/workflows/release.yml",
+        "sourceRef": "refs/tags/v1.0.0"
+      },
+      "runtimeImage": {
+        "initrdSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "kernelSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "manifestSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "version": "0.14.19"
+      },
+      "status": "revoked",
+      "vmShape": {
+        "cpus": 8,
+        "gpuArchitecture": "BLACKWELL",
+        "gpus": 1,
+        "memory": 65536,
+        "vcpuSignature": "0x800f12"
+      }
+    }
+  ],
+  "platformMinimumTcb": {
+    "bootloader": 1,
+    "fmc": 1,
+    "microcode": 70,
+    "snp": 3,
+    "tee": 1
+  },
+  "version": 1
+}
