@@ -41,28 +41,42 @@ if (!isDeepStrictEqual(exports, ["check"])) {
   fail(`fabaiSeal exports ${exports}, want only check, so nothing can override a root`);
 }
 
-// Inlines a vector's allowlistFile, as the Go loader does, because the WASM
-// hook only sees the one vector's text.
-const resolveAllowlist = async (vector) => {
-  if (vector.allowlistFile === undefined) {
-    if (vector.allowlist === undefined) throw new Error("vector has neither allowlist nor allowlistFile");
-    return;
-  }
-  if (vector.allowlist !== undefined) throw new Error("vector has both allowlist and allowlistFile");
-  const path = join(vectorsDir, ...vector.allowlistFile.split("/"));
+// Reads the JSON fixture a vector names, relative to the vectors directory.
+const readFixture = async (member, name) => {
+  const path = join(vectorsDir, ...name.split("/"));
   const rel = relative(vectorsDir, path);
   if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) {
-    throw new Error(`allowlistFile ${JSON.stringify(vector.allowlistFile)} isn't a local path`);
+    throw new Error(`${member} ${JSON.stringify(name)} isn't a local path`);
   }
-  vector.allowlist = JSON.parse(await readFile(path, "utf8"));
-  delete vector.allowlistFile;
+  return JSON.parse(await readFile(path, "utf8"));
+};
+
+// Inlines a vector's allowlistFile and rootsFile, as the Go loader does,
+// because the WASM hook only sees the one vector's text. A vector without
+// roots uses the pinned AMD roots.
+const resolveFiles = async (vector) => {
+  if (vector.allowlistFile === undefined) {
+    if (vector.allowlist === undefined) throw new Error("vector has neither allowlist nor allowlistFile");
+  } else {
+    if (vector.allowlist !== undefined) throw new Error("vector has both allowlist and allowlistFile");
+    vector.allowlist = await readFixture("allowlistFile", vector.allowlistFile);
+    delete vector.allowlistFile;
+  }
+  if (vector.rootsFile !== undefined) {
+    if (vector.roots !== undefined) throw new Error("vector has both roots and rootsFile");
+    vector.roots = await readFixture("rootsFile", vector.rootsFile);
+    if (Object.keys(vector.roots).length === 0) {
+      throw new Error(`rootsFile ${JSON.stringify(vector.rootsFile)} has no roots`);
+    }
+    delete vector.rootsFile;
+  }
 };
 
 const files = (await readdir(vectorsDir)).filter((f) => f.endsWith(".json")).sort();
 for (const file of files) {
   const vector = JSON.parse(await readFile(join(vectorsDir, file), "utf8"));
   try {
-    await resolveAllowlist(vector);
+    await resolveFiles(vector);
     const got = JSON.parse(await globalThis.fabaiSealTest.runVector(JSON.stringify(vector)));
     if (!isDeepStrictEqual(got, vector.expect)) {
       fail(`${vector.name}: got ${JSON.stringify(got)}, want ${JSON.stringify(vector.expect)}`);

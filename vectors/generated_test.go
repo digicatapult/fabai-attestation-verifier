@@ -4,7 +4,9 @@ package vectors_test
 
 import (
 	"bytes"
+	"crypto/x509"
 	"encoding/json/jsontext"
+	"encoding/pem"
 	"maps"
 	"os"
 	"slices"
@@ -29,9 +31,9 @@ func TestGeneratedVectors(t *testing.T) {
 }
 
 // TestCommittedVectorsMatchGenerator checks that the committed synthetic
-// vectors are exactly the generator's scenarios, with the same inputs and
-// expectations, so the two can't drift apart unnoticed. Every generator run
-// re-signs the documents and roots, so it doesn't compare those bytes.
+// vectors are exactly the generator's scenarios, with the same inputs,
+// roots and expectations, so the two can't drift apart unnoticed. Every
+// generator run re-signs the documents, so it doesn't compare those bytes.
 func TestCommittedVectorsMatchGenerator(t *testing.T) {
 	loaded, err := sealtest.Load(".")
 	if err != nil {
@@ -87,12 +89,41 @@ func compareVector(t *testing.T, got, want *sealtest.Vector) {
 	if got.Capture != nil {
 		t.Errorf("synthetic vector has capture %+v", got.Capture)
 	}
-	if gotProducts, wantProducts := slices.Sorted(maps.Keys(got.Roots)), slices.Sorted(maps.Keys(want.Roots)); !slices.Equal(gotProducts, wantProducts) {
-		t.Errorf("roots for %v, want %v", gotProducts, wantProducts)
-	}
+	compareRoots(t, got.Roots, want.Roots)
 	if !bytes.Equal(compact(t, got.Allowlist), compact(t, want.Allowlist)) {
 		t.Errorf("allowlist differs from the generator's")
 	}
+}
+
+// compareRoots checks that got has the same products as want, each with the
+// same subject and key. The certificate bytes aren't compared: go-sev-guest
+// signs with a process-wide seeded stream, so they depend on what else the
+// process signed first.
+func compareRoots(t *testing.T, got, want map[string]string) {
+	t.Helper()
+	if (got == nil) != (want == nil) || !slices.Equal(slices.Sorted(maps.Keys(got)), slices.Sorted(maps.Keys(want))) {
+		t.Errorf("roots for %v, want %v", slices.Sorted(maps.Keys(got)), slices.Sorted(maps.Keys(want)))
+		return
+	}
+	for product, wantPEM := range want {
+		gotCert, wantCert := parseRoot(t, got[product]), parseRoot(t, wantPEM)
+		if !bytes.Equal(gotCert.RawSubject, wantCert.RawSubject) || !bytes.Equal(gotCert.RawSubjectPublicKeyInfo, wantCert.RawSubjectPublicKeyInfo) {
+			t.Errorf("root for %s isn't the generator's ARK", product)
+		}
+	}
+}
+
+func parseRoot(t *testing.T, pemText string) *x509.Certificate {
+	t.Helper()
+	block, _ := pem.Decode([]byte(pemText))
+	if block == nil {
+		t.Fatal("root isn't PEM")
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return cert
 }
 
 func compact(t *testing.T, v jsontext.Value) jsontext.Value {

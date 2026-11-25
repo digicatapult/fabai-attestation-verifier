@@ -4,24 +4,33 @@
 //
 //	go run -tags sealtest ./internal/sealtest/gen -out vectors
 //
-// The vectors share one allowlist, written once under fixtures/ and named by
-// each vector's allowlistFile. Every run re-signs every document.
+// The vectors share one allowlist and one set of roots, each written once
+// under fixtures/ and named by each vector's allowlistFile and rootsFile.
+// Every run re-signs every document; the ARK keeps go-sev-guest's fixed
+// test key.
 package main
 
 import (
 	"bytes"
 	"encoding/json/jsontext"
+	"encoding/json/v2"
+	"errors"
 	"flag"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 
+	"github.com/digicatapult/fabai-attestation-verifier/internal/sealtest"
 	"github.com/digicatapult/fabai-attestation-verifier/internal/sealtest/synth"
 )
 
-// allowlistFile is the shared allowlist, relative to the output directory.
-// It sits in a subdirectory so that loaders globbing *.json skip it.
-const allowlistFile = "fixtures/synthetic-allowlist.json"
+// The shared fixtures, relative to the output directory. They sit in a
+// subdirectory so that loaders globbing *.json skip them.
+const (
+	allowlistFile = "fixtures/synthetic-allowlist.json"
+	rootsFile     = "fixtures/synthetic-roots.json"
+)
 
 func main() {
 	out := flag.String("out", "vectors", "directory to write the vectors to")
@@ -38,7 +47,14 @@ func run(out string) error {
 		return err
 	}
 	allowlist := synth.Allowlist()
-	if err := writeAllowlist(filepath.Join(out, filepath.FromSlash(allowlistFile)), allowlist); err != nil {
+	roots, err := sharedRoots(vectors)
+	if err != nil {
+		return err
+	}
+	if err := writeFixture(out, allowlistFile, allowlist); err != nil {
+		return err
+	}
+	if err := writeFixture(out, rootsFile, roots); err != nil {
 		return err
 	}
 	for _, v := range vectors {
@@ -46,6 +62,10 @@ func run(out string) error {
 			return fmt.Errorf("%s: allowlist isn't the shared synthetic allowlist", v.Name)
 		}
 		v.Allowlist, v.AllowlistFile = nil, allowlistFile
+		// A vector without roots uses the pinned AMD roots, and keeps none.
+		if v.Roots != nil {
+			v.Roots, v.RootsFile = nil, rootsFile
+		}
 		data, err := v.Marshal()
 		if err != nil {
 			return fmt.Errorf("%s: %w", v.Name, err)
@@ -57,13 +77,34 @@ func run(out string) error {
 	return nil
 }
 
-func writeAllowlist(path string, allowlist jsontext.Value) error {
+// sharedRoots returns the roots every vector that has roots carries, and
+// fails if they differ.
+func sharedRoots(vectors []*sealtest.Vector) (map[string]string, error) {
+	var roots map[string]string
+	for _, v := range vectors {
+		switch {
+		case v.Roots == nil:
+		case roots == nil:
+			roots = v.Roots
+		case !maps.Equal(v.Roots, roots):
+			return nil, fmt.Errorf("%s: roots aren't the shared synthetic roots", v.Name)
+		}
+	}
+	if roots == nil {
+		return nil, errors.New("no synthetic vector has roots")
+	}
+	return roots, nil
+}
+
+// writeFixture writes value as indented JSON to name, relative to out.
+func writeFixture(out, name string, value any) error {
+	path := filepath.Join(out, filepath.FromSlash(name))
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	indented := allowlist.Clone()
-	if err := indented.Indent(jsontext.WithIndent("  ")); err != nil {
-		return fmt.Errorf("allowlist: %w", err)
+	data, err := json.Marshal(value, json.Deterministic(true), jsontext.WithIndent("  "))
+	if err != nil {
+		return fmt.Errorf("%s: %w", name, err)
 	}
-	return os.WriteFile(path, append(indented, '\n'), 0o644)
+	return os.WriteFile(path, append(data, '\n'), 0o644)
 }

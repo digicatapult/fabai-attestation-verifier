@@ -31,6 +31,10 @@ type Vector struct {
 	// Roots, if set, replace the pinned AMD roots (product line to ARK PEM).
 	// Absent for captured vectors, which use the pinned roots.
 	Roots map[string]string `json:"roots,omitempty"`
+	// RootsFile names a file holding Roots, as a slash-separated path
+	// relative to the vector's directory, so vectors can share one root.
+	// Load reads it into Roots. A vector has at most one of the two.
+	RootsFile string `json:"rootsFile,omitempty"`
 	// Document holds the exact document bytes, base64 in the file.
 	Document []byte `json:"document"`
 	// Nonce is the nonce the check uses, lowercase hex.
@@ -87,7 +91,7 @@ func OutcomeOf(r *seal.Result) Outcome {
 }
 
 // Load reads every *.json vector in dir, sorted by file name, and resolves
-// each vector's AllowlistFile.
+// each vector's AllowlistFile and RootsFile.
 func Load(dir string) ([]*Vector, error) {
 	paths, err := filepath.Glob(filepath.Join(dir, "*.json"))
 	if err != nil {
@@ -104,7 +108,7 @@ func Load(dir string) ([]*Vector, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", path, err)
 		}
-		if err := v.resolveAllowlist(dir); err != nil {
+		if err := v.resolveFiles(dir); err != nil {
 			return nil, fmt.Errorf("%s: %w", path, err)
 		}
 		vectors = append(vectors, v)
@@ -112,28 +116,49 @@ func Load(dir string) ([]*Vector, error) {
 	return vectors, nil
 }
 
-// resolveAllowlist reads AllowlistFile, relative to dir, into Allowlist.
-func (v *Vector) resolveAllowlist(dir string) error {
+// resolveFiles reads AllowlistFile into Allowlist and RootsFile into Roots,
+// both relative to dir. A vector without roots uses the pinned AMD roots.
+func (v *Vector) resolveFiles(dir string) error {
 	switch {
 	case v.AllowlistFile == "" && len(v.Allowlist) == 0:
 		return errors.New("vector has neither allowlist nor allowlistFile")
-	case v.AllowlistFile == "":
-		return nil
-	case len(v.Allowlist) != 0:
+	case v.AllowlistFile != "" && len(v.Allowlist) != 0:
 		return errors.New("vector has both allowlist and allowlistFile")
+	case v.AllowlistFile != "":
+		if err := readFixture(dir, "allowlistFile", v.AllowlistFile, &v.Allowlist); err != nil {
+			return err
+		}
+		v.AllowlistFile = ""
 	}
-	name := filepath.FromSlash(v.AllowlistFile)
-	if !filepath.IsLocal(name) {
-		return fmt.Errorf("allowlistFile %q isn't a local path", v.AllowlistFile)
+	switch {
+	case v.RootsFile != "" && v.Roots != nil:
+		return errors.New("vector has both roots and rootsFile")
+	case v.RootsFile != "":
+		if err := readFixture(dir, "rootsFile", v.RootsFile, &v.Roots); err != nil {
+			return err
+		}
+		if len(v.Roots) == 0 {
+			return fmt.Errorf("rootsFile %q has no roots", v.RootsFile)
+		}
+		v.RootsFile = ""
 	}
-	data, err := os.ReadFile(filepath.Join(dir, name))
+	return nil
+}
+
+// readFixture decodes the JSON file at the slash-separated path name,
+// relative to dir, into out. member names the vector member, for errors.
+func readFixture(dir, member, name string, out any) error {
+	local := filepath.FromSlash(name)
+	if !filepath.IsLocal(local) {
+		return fmt.Errorf("%s %q isn't a local path", member, name)
+	}
+	data, err := os.ReadFile(filepath.Join(dir, local))
 	if err != nil {
-		return fmt.Errorf("allowlistFile: %w", err)
+		return fmt.Errorf("%s: %w", member, err)
 	}
-	if err := json.Unmarshal(data, &v.Allowlist); err != nil {
-		return fmt.Errorf("allowlistFile %q: %w", v.AllowlistFile, err)
+	if err := json.Unmarshal(data, out, json.RejectUnknownMembers(true)); err != nil {
+		return fmt.Errorf("%s %q: %w", member, name, err)
 	}
-	v.AllowlistFile = ""
 	return nil
 }
 
@@ -160,6 +185,9 @@ func (v *Vector) Marshal() ([]byte, error) {
 func (v *Vector) Run(ctx context.Context) (*seal.Result, error) {
 	if v.AllowlistFile != "" || len(v.Allowlist) == 0 {
 		return nil, errors.New("vector allowlist isn't resolved: load vectors with Load, or inline allowlistFile")
+	}
+	if v.RootsFile != "" {
+		return nil, errors.New("vector roots aren't resolved: load vectors with Load, or inline rootsFile")
 	}
 	nonce, err := hex.DecodeString(v.Nonce)
 	if err != nil {
